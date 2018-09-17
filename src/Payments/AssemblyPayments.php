@@ -73,7 +73,15 @@ class AssemblyPayments implements PaymentContract
         ));
     }
 
-    private function createUser($id, $firstName, $lastName, $country = 'AUS')
+    private function updateCallback($id, $url)
+    {
+        $c = new Callbacks();
+        return $c->update($id, array(
+            'url' => $url
+        ));
+    }
+
+    private function createUser($id, $firstName, $lastName, $msisdn, $country = 'AUS')
     {
         $u = new User();
         return $u->create(array(
@@ -81,6 +89,7 @@ class AssemblyPayments implements PaymentContract
             'first_name' => $firstName,
             'last_name' => $lastName,
             'email' => $id . '@' . $this->params['email_domain'],
+            'mobile' => $msisdn,
             'country' => $country
         ));
     }
@@ -244,9 +253,10 @@ class AssemblyPayments implements PaymentContract
     /**
      * Registers callbacks with Promise Pay.
      *
-     * Only needs to be called once to confgure the callbacks for our account.
+     * Only needs to be called once to configure the callbacks for our account.
      *
-     * Method will check if already registered and only register if required.
+     * Will check if already registered and only register if required.
+     * Will update the registered callback if the existing registered callback is different to the configured callback
      *
      * Callback end points are configured in the $params
      *
@@ -262,22 +272,29 @@ class AssemblyPayments implements PaymentContract
             if (isset($this->params['callback_' . $this::CALLBACK_TYPE_TRANSACTIONS])) {
                 $isRegistered = false;
                 //Check of the callback is already registered
-                foreach ($this->getCallbacks() as $callback) {
+                $callbacks = $this->getCallbacks();
+                foreach (! $callbacks ? [] : $callbacks as $callback) {
                     if ($callback['object_type'] == $this::CALLBACK_TYPE_TRANSACTIONS) {
+                        //Compare the registered URL to the URL we have configured, if not then we can update it
+                        if ($callback['url'] != $this->params['callback_' . $this::CALLBACK_TYPE_TRANSACTIONS]) {
+                            $this->updateCallback($callback['id'],$this->params['callback_' . $this::CALLBACK_TYPE_TRANSACTIONS]);
+                        }
                         $isRegistered = true;
                     }
                 }
-                //If not registered, then register it now
-                if ($isRegistered) {
-                    //Log::debug(Session::getId() . " AssemblyPayments:registerCallback {$this::CALLBACK_TYPE_TRANSACTIONS} already registered");
-                } else {
+                //If not registered at all, then register it now
+                if (!$isRegistered) {
                     //Log::debug(Session::getId() . " AssemblyPayments:registerCallback {$this::CALLBACK_TYPE_TRANSACTIONS} registering");
-                    $this->createCallback($this::CALLBACK_TYPE_TRANSACTIONS, 'Transaction callback',
-                        'callback_' . $this::CALLBACK_TYPE_TRANSACTIONS);
+                    $this->createCallback(
+                        $this::CALLBACK_TYPE_TRANSACTIONS,
+                        'Transaction callback',
+                        $this->params['callback_' . $this::CALLBACK_TYPE_TRANSACTIONS]
+                    );
                 }
             }
         } catch (\Exception $e) {
             //Log::debug(Session::getId() . " AssemblyPayments:registerCallback caught exception");
+            //dump($e->getMessage());
             throw new CoinLoftPaymentException('Register callbacks failed', 999, $e);
         }
     }
@@ -329,6 +346,7 @@ class AssemblyPayments implements PaymentContract
      * @param int $customerId Unique Customer ID from the consuming system
      * @param string $firstName First name of Customer
      * @param string $lastName Last name of Customer
+     * @param string $msisdn Mobile number of Customer in international format (with country code)
      *
      * @throws CoinLoftPaymentException
      * @author Kim Beveridge <kim@rhinoloft.com>
@@ -347,10 +365,12 @@ class AssemblyPayments implements PaymentContract
      *          ]
      *      ]
      */
-    public function getUserDetails($customerId, $firstName = null, $lastName = null)
+    public function getUserDetails($customerId, $firstName=null, $lastName=null, $msisdn=null)
     {
         //Log::debug(Session::getId() . " AssemblyPayments:getUserDetails start {$customerId}");
         try {
+            //Add '+' to msisdn
+            $msisdn = '+' . preg_replace('/^\++(?=\d)/', '', $msisdn);
 
             //Check if user already exists on assembly payments
             try {
@@ -359,9 +379,9 @@ class AssemblyPayments implements PaymentContract
                 //if user does not exist, then we will create it now
                 if ($e instanceof Api && $this->isError($e, 422, 'id: invalid')) {
                     //Log::debug(Session::getId() . " AssemblyPayments:getUserDetails user not found, creating..");
-                    if (isset($firstName) && isset($lastName)) {
+                    if (isset($firstName) && isset($lastName) && isset($msisdn)) {
                         //Log::debug(Session::getId() . " AssemblyPayments:getUserDetails creating new user {$customerId} {$firstName} {$lastName}");
-                        $user = $this->createUser($customerId, $firstName, $lastName);
+                        $user = $this->createUser($customerId, $firstName, $lastName, $msisdn);
                     } else {
                         throw $e;
                     }

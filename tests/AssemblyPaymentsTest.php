@@ -51,7 +51,7 @@ final class AssemblyPaymentsTest extends TestCase
         //Consolidated User Messages
         //=================
 
-//        $userDetails = $asbly->getUserDetails(10001, 'Fred','Jones');
+//        $userDetails = $asbly->getUserDetails(10001, 'Fred','Jones', '61412995222');
 
 //        print_r($asbly->getTransactions('0be5032b25c1ddceb31fb25edbed384a'));
 
@@ -82,7 +82,7 @@ final class AssemblyPaymentsTest extends TestCase
 
 //        print_r($asbly->sweepCustomerWallet(121213,10001, 100, 'sweep for bla'));
 
-//        print_r($this->asbly->getUserDetails(10001, 'Fred','Jones'));
+//        print_r($this->asbly->getUserDetails(10001, 'Fred','Jones', '61412995222'));
 
 //        print_r($this->asbly->getOurDetails());
 
@@ -95,8 +95,8 @@ final class AssemblyPaymentsTest extends TestCase
     public function bpay_flow(): void
     {
         //These need to be incremented for each test
-        $customerId = 10013;  //Unique Customer ID from calling platform
-        $orderId = 121225;  //Unique Order ID from calling platform
+        $customerId = 10017;  //Unique Customer ID from calling platform
+        $orderId = 121229;  //Unique Order ID from calling platform
 
 
         //Take note of OUR wallet balance, so we can compare it at the end
@@ -104,7 +104,7 @@ final class AssemblyPaymentsTest extends TestCase
         print_r("\nOur details at start :" . print_r($ourDetails_at_start,true));
 
         //Create User
-        $userDetails = $this->asbly->getUserDetails($customerId,'Anthony', 'Jones');
+        $userDetails = $this->asbly->getUserDetails($customerId,'Anthony', 'Jones', '61412995222');
 
         print_r("\nCreated User :" .print_r($userDetails,true));
         $this->assertEquals(0,$userDetails['wallets'][0]['balance']);
@@ -134,7 +134,7 @@ final class AssemblyPaymentsTest extends TestCase
 
         //Check OUR wallet to see we now have the funds
         $ourDetails_at_end = $this->asbly->getOurDetails();
-        print_r("\nOur details at emd :" . print_r($ourDetails_at_end,true));
+        print_r("\nOur details at end :" . print_r($ourDetails_at_end,true));
         $increasedBalance = $ourDetails_at_end['wallets'][0]['balance'] - $ourDetails_at_start['wallets'][0]['balance'];
         $expectedBalance = 100 - $payment['disbursement']['amount'];
         $this->assertEquals($expectedBalance, $increasedBalance);
