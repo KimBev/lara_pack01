@@ -493,6 +493,11 @@ class AssemblyPayments implements PaymentContract
                 'direction' => 'credit'
             ));
 
+            //If null, make it an empty array
+            if (!isset($transactions)) {
+                $transactions = array();
+            }
+
             //Filter out based on timestamp
             if (isset($timestamp)) {
                 foreach ($transactions as $key => $transaction) {

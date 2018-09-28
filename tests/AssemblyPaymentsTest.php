@@ -22,6 +22,14 @@ final class AssemblyPaymentsTest extends TestCase
         'asm_user_id'=> '0be5032b25c1ddceb31fb25edbed384a',
         'email_domain'=>'coinloft.com.au');
 
+//        $params = array(
+//            'env'=>'production',
+//            'login'=>'kim@bitcoin.com.au',
+//            'token'=>'xxxxxxx=',
+//            'callback_transactions'=>'https://clau-api.coinloft.com:8452/v1/order/payment/notify/assembly/bpay',
+//            'asm_user_id'=> 'd37b4d08aff3dbc7ab2b5cabf5a040cf',
+//            'email_domain'=>'coinloft.com.au');
+
         $this->asbly = new AssemblyPayments($params);
 
         $this->asbly->registerCallback();
@@ -95,16 +103,16 @@ final class AssemblyPaymentsTest extends TestCase
     public function bpay_flow(): void
     {
         //These need to be incremented for each test
-        $customerId = 10017;  //Unique Customer ID from calling platform
-        $orderId = 121229;  //Unique Order ID from calling platform
-
+        $customerId = 10019;  //Unique Customer ID from calling platform
+        $orderId = 121231;  //Unique Order ID from calling platform
+        $mobile = "61412995223";
 
         //Take note of OUR wallet balance, so we can compare it at the end
         $ourDetails_at_start = $this->asbly->getOurDetails();
         print_r("\nOur details at start :" . print_r($ourDetails_at_start,true));
 
         //Create User
-        $userDetails = $this->asbly->getUserDetails($customerId,'Anthony', 'Jones', '61412995222');
+        $userDetails = $this->asbly->getUserDetails($customerId,'Anthony', 'Jones', $mobile);
 
         print_r("\nCreated User :" .print_r($userDetails,true));
         $this->assertEquals(0,$userDetails['wallets'][0]['balance']);
