@@ -232,6 +232,11 @@ class AssemblyPayments implements PaymentContract
             'transaction_type' => 'disbursement'
         ));
 
+        //If null, make it an empty array
+        if (!isset($transactions)) {
+            $transactions = array();
+        }
+
         //Filter out based on timestamp
         if (isset($timestamp)) {
             foreach ($transactions as $key => $transaction) {
