@@ -4,6 +4,8 @@ namespace KimBev\Payments;
 
 use Carbon\Carbon;
 use KimBev\Contracts\Payments\KimBevContract;
+Use Log;
+Use Session;
 
 class TestClass01 implements KimBevContract
 {
@@ -32,6 +34,7 @@ class TestClass01 implements KimBevContract
 
     public function getCallbacks()
     {
+        Log::debug(Session::getId() . " TestClass01:getCallbacks start");
         return "hello";
     }
 
