@@ -1,9 +1,9 @@
 <?php
 
-namespace CoinLoft\Contracts\Payments;
+namespace KimBev\Contracts\Payments;
 
 
-interface PaymentContract
+interface KimBevContract
 {
 
     /**

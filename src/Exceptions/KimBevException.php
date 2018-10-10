@@ -1,10 +1,10 @@
 <?php
 
-namespace CoinLoft\Exceptions;
+namespace KimBev\Exceptions;
 
 use Exception;
 
-class CoinLoftPaymentException extends Exception {
+class KimBevException extends Exception {
 
     /**
      * Render an exception into an HTTP response.
