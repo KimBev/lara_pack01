@@ -1,5 +1,5 @@
 {
-  "name": "kimbev",
+  "name": "kimbev/larapack_01",
   "autoload": {
     "psr-4": {
       "KimBev\\": "src/"
